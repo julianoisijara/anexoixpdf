@@ -38,3 +38,4 @@ jobs:
         with:
           name: build-${{ matrix.os }}
           path: dist/*.${{ matrix.os == 'ubuntu-latest' && 'AppImage' || (matrix.os == 'windows-latest' && 'exe' || 'zip') }}
+          retention-days: 1
