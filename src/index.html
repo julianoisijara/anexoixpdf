@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anexo IX — PDF Plennus</title>
+  <meta name="description" content="Editor de formulários PDF para o Anexo IX" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" type="image/png" href="assets/pdf.png" />
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════ LANDING SCREEN ═══ -->
+  <div id="landing-screen" class="screen active">
+    <div class="landing-bg">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+    <div class="landing-content">
+      <div class="logo-wrap">
+        <div class="logo-icon">
+          <svg viewBox="0 0 48 48" fill="none">
+            <rect x="6" y="4" width="28" height="36" rx="3" fill="url(#g1)" opacity="0.9" />
+            <rect x="14" y="10" width="16" height="2.5" rx="1.25" fill="white" opacity="0.7" />
+            <rect x="14" y="16" width="12" height="2.5" rx="1.25" fill="white" opacity="0.7" />
+            <rect x="14" y="22" width="14" height="2.5" rx="1.25" fill="white" opacity="0.7" />
+            <rect x="14" y="28" width="10" height="2.5" rx="1.25" fill="white" opacity="0.7" />
+            <circle cx="36" cy="36" r="10" fill="url(#g2)" />
+            <path d="M31 36l3.5 3.5 5.5-6" stroke="white" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <defs>
+              <linearGradient id="g1" x1="6" y1="4" x2="34" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#5B8DEF" />
+                <stop offset="1" stop-color="#3d6dda" />
+              </linearGradient>
+              <linearGradient id="g2" x1="26" y1="26" x2="46" y2="46" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#43D9A2" />
+                <stop offset="1" stop-color="#1fb87a" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <span class="logo-title">Anexo IX</span>
+          <span class="logo-subtitle">Plennus</span>
+        </div>
+      </div>
+
+      <div id="drop-zone" class="drop-zone">
+        <svg class="drop-icon" viewBox="0 0 64 64" fill="none">
+          <path d="M32 44V20M32 20L21 31M32 20L43 31" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+          <path d="M12 46c0 3.314 2.686 6 6 6h28c3.314 0 6-2.686 6-6" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" />
+        </svg>
+        <p class="drop-title">Arraste seu PDF aqui</p>
+        <p class="drop-sub">ou escolha um arquivo</p>
+        <button id="btn-choose-landing" class="btn-primary" type="button">
+          <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+            <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4l2 2h4a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+              clip-rule="evenodd" />
+          </svg>
+          Escolher PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ LOADING SCREEN ═══ -->
+  <div id="loading-screen" class="screen">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p class="loading-text">Lendo campos do PDF…</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════ EDITOR SCREEN ════ -->
+  <div id="editor-screen" class="screen">
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo-mini">
+          <svg viewBox="0 0 24 24" fill="none" width="22" height="22">
+            <rect x="3" y="2" width="14" height="18" rx="2" fill="#5B8DEF" opacity="0.9" />
+            <rect x="7" y="6" width="6" height="1.5" rx="0.75" fill="white" opacity="0.8" />
+            <rect x="7" y="9.5" width="8" height="1.5" rx="0.75" fill="white" opacity="0.8" />
+            <rect x="7" y="13" width="5" height="1.5" rx="0.75" fill="white" opacity="0.8" />
+            <circle cx="19" cy="19" r="4" fill="#43D9A2" />
+            <path d="M17 19l1.5 1.5L21 18" stroke="white" stroke-width="1.2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          <span>Anexo IX Plennus</span>
+        </div>
+        <span id="file-name-badge" class="file-badge"></span>
+      </div>
+      <div class="topbar-right">
+        <span id="fields-count-badge" class="fields-badge"></span>
+      </div>
+    </header>
+
+    <!-- Main split-view -->
+    <main class="editor-main">
+      <!-- LEFT — Form fields -->
+      <aside class="panel panel-left">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path fill-rule="evenodd"
+                d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+                clip-rule="evenodd" />
+            </svg>
+            Campos do Formulário
+          </h2>
+          <button id="btn-clear-fields" class="btn-ghost btn-sm" type="button" title="Limpar todos os campos">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+              <path fill-rule="evenodd"
+                d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                clip-rule="evenodd" />
+            </svg>
+            Limpar
+          </button>
+        </div>
+        <div id="fields-container" class="fields-container">
+          <!-- Dynamic fields injected by app.js -->
+        </div>
+      </aside>
+
+      <!-- DIVIDER -->
+      <div class="panel-divider" id="panel-divider"></div>
+
+      <!-- RIGHT — PDF Preview -->
+      <section class="panel panel-right">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+              <path fill-rule="evenodd"
+                d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                clip-rule="evenodd" />
+            </svg>
+            Prévia do PDF
+          </h2>
+          <div class="page-nav">
+            <button id="btn-prev-page" class="btn-ghost btn-sm" type="button">&#8592;</button>
+            <span id="page-indicator" class="page-indicator">Pág 1 / 1</span>
+            <button id="btn-next-page" class="btn-ghost btn-sm" type="button">&#8594;</button>
+          </div>
+        </div>
+        <div class="preview-container" id="preview-container">
+          <canvas id="pdf-canvas"></canvas>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom toolbar -->
+    <footer class="toolbar">
+      <button id="btn-new-pdf" class="btn-secondary" type="button">
+        <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+          <path fill-rule="evenodd"
+            d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z"
+            clip-rule="evenodd" />
+          <path fill-rule="evenodd"
+            d="M15.992 11.057a1 1 0 011.276.61A5.002 5.002 0 0114.001 13H11a1 1 0 110-2h4.001a7.001 7.001 0 00-2.817-4.566 1 1 0 01.666-1.885 9.002 9.002 0 012.142 6.508z"
+            clip-rule="evenodd" />
+        </svg>
+        Selecionar novo PDF
+      </button>
+      <div class="toolbar-center">
+        <span id="status-msg" class="status-msg"></span>
+      </div>
+      <div class="toolbar-right">
+        <button id="btn-save-pdf" class="btn-primary btn-save" type="button">
+          <svg viewBox="0 0 20 20" fill="currentColor" class="btn-icon">
+            <path
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" />
+            <path fill-rule="evenodd"
+              d="M3 5a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm11 1H6v8l4-2 4 2V6z"
+              clip-rule="evenodd" />
+          </svg>
+          Salvar PDF preenchido
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast" role="alert"></div>
+
+  <!-- ═══════════════════════════════════════════ TECH MODAL ═══════ -->
+  <div id="tech-modal" class="modal-overlay">
+    <div class="modal-content tech-modal">
+      <div class="modal-header">
+        <h2>Selecione a Tecnologia</h2>
+        <p>Isso definirá os valores base para o cálculo financeiro</p>
+      </div>
+      <div class="tech-options">
+        <label class="tech-card">
+          <input type="radio" name="tech_stack" value="Java" />
+          <div class="tech-card-inner">
+            <span class="tech-icon">☕</span>
+            <span class="tech-name">Java</span>
+          </div>
+        </label>
+        <label class="tech-card">
+          <input type="radio" name="tech_stack" value="FORMs" />
+          <div class="tech-card-inner">
+            <span class="tech-icon">📄</span>
+            <span class="tech-name">FORMs</span>
+          </div>
+        </label>
+        <label class="tech-card">
+          <input type="radio" name="tech_stack" value="GENEXUS" />
+          <div class="tech-card-inner">
+            <span class="tech-icon">⚙️</span>
+            <span class="tech-name">GENEXUS</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="tech-values-form">
+        <div class="form-group">
+          <label for="tech-val-senior">Valor Sênior (R$)</label>
+          <input type="number" id="tech-val-senior" class="field-input is-numeric" step="0.01" min="0"
+            placeholder="0.00" />
+        </div>
+        <div class="form-group">
+          <label for="tech-val-pleno">Valor Pleno (R$)</label>
+          <input type="number" id="tech-val-pleno" class="field-input is-numeric" step="0.01" min="0"
+            placeholder="0.00" />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-confirm-tech" class="btn-primary" type="button">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF.js worker setup -->
+  <script>
+    // Configure PDF.js worker path to use local copy
+    window.PDFJS_WORKER_URL = '../node_modules/pdfjs-dist/build/pdf.worker.min.mjs';
+  </script>
+  <script type="module" src="app.js"></script>
+</body>
+
+</html>

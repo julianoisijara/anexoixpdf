@@ -1,0 +1,57 @@
+{
+  "name": "Anexo IX PDF Plennus",
+  "version": "1.0.0",
+  "author": "1T Juliano",
+  "email": "julianojri@fab.mil.br",
+  "homepage": "http://www.ccarj.intraer/",
+  "description": "Editor de formulários PDF — Anexo IX Plennus",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:linux": "electron-builder --linux",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win"
+  },
+  "build": {
+    "appId": "br.com.fab.anexoixpdf",
+    "productName": "Anexo IX PDF Plennus",
+    "icon": "src/assets/pdf.png",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "node_modules/**/*"
+    ],
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Office"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ]
+    }
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.9.155",
+    "yarn": "^1.22.22"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "license": "MIT"
+}
