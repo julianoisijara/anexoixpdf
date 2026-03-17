@@ -33,9 +33,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Artifacts
+      - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest'
         with:
-          name: build-${{ matrix.os }}
-          path: dist/*.${{ matrix.os == 'ubuntu-latest' && 'AppImage' || (matrix.os == 'windows-latest' && 'exe' || 'zip') }}
+          name: build-linux
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.tar.gz
+          retention-days: 1
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'windows-latest'
+        with:
+          name: build-windows
+          path: dist/*.exe
           retention-days: 1
