@@ -1,8 +1,10 @@
 {
   "name": "anexoixpdf",
   "version": "1.0.0",
-  "author": "1T Juliano",
-  "email": "julianojri@fab.mil.br",
+  "author": {
+    "name": "1T Juliano",
+    "email": "julianojri@fab.mil.br"
+  },
   "homepage": "http://www.ccarj.intraer/",
   "description": "Editor de formulários PDF — Anexo IX Plennus",
   "main": "main.js",
