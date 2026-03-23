@@ -40,6 +40,29 @@ function createMenu() {
       label: 'Ajuda',
       submenu: [
         {
+          label: 'Tutorial',
+          click: () => {
+            let tutorialWin = new BrowserWindow({
+              width: 800,
+              height: 650,
+              parent: mainWindow,
+              modal: true,
+              titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+              frame: process.platform !== 'darwin',
+              backgroundColor: '#0a0b10',
+              show: false,
+              webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+              }
+            });
+            tutorialWin.loadFile(path.join(__dirname, 'src', 'tutorial.html'));
+            tutorialWin.once('ready-to-show', () => {
+              tutorialWin.show();
+            });
+          }
+        },
+        {
           label: 'Sobre',
           click: () => {
             dialog.showMessageBox(mainWindow, {

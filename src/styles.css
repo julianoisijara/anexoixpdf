@@ -272,7 +272,8 @@ html, body {
 .field-label {
   font-size: 0.75rem; font-weight: 600;
   color: var(--text-2); letter-spacing: 0.03em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  white-space: normal; line-height: 1.4;
+  word-break: break-word; flex: 1;
 }
 .field-type-badge {
   font-size: 0.65rem; font-weight: 500; padding: 1px 6px;
@@ -288,7 +289,7 @@ html, body {
   transition: color var(--transition);
 }
 .field-info-icon:hover { color: var(--accent); }
-.field-label-row { display: flex; align-items: center; }
+.field-label-row { display: flex; align-items: flex-start; margin-bottom: 2px; }
 
 /* Inputs */
 .field-input,
