@@ -41,26 +41,7 @@ function createMenu() {
       submenu: [
         {
           label: 'Tutorial',
-          click: () => {
-            let tutorialWin = new BrowserWindow({
-              width: 800,
-              height: 650,
-              parent: mainWindow,
-              modal: true,
-              titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
-              frame: process.platform !== 'darwin',
-              backgroundColor: '#0a0b10',
-              show: false,
-              webPreferences: {
-                nodeIntegration: true,
-                contextIsolation: false
-              }
-            });
-            tutorialWin.loadFile(path.join(__dirname, 'src', 'tutorial.html'));
-            tutorialWin.once('ready-to-show', () => {
-              tutorialWin.show();
-            });
-          }
+          click: () => openTutorialWindow()
         },
         {
           label: 'Sobre',
@@ -81,6 +62,27 @@ function createMenu() {
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+}
+
+function openTutorialWindow() {
+  let tutorialWin = new BrowserWindow({
+    width: 800,
+    height: 650,
+    parent: mainWindow,
+    modal: true,
+    titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    frame: process.platform !== 'darwin',
+    backgroundColor: '#0a0b10',
+    show: false,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
+  tutorialWin.loadFile(path.join(__dirname, 'src', 'tutorial.html'));
+  tutorialWin.once('ready-to-show', () => {
+    tutorialWin.show();
+  });
 }
 
 function createWindow() {
@@ -130,6 +132,11 @@ ipcMain.handle('dialog:openFile', async () => {
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   return result.filePaths[0];
+});
+
+// ─── IPC: Open Tutorial window ────────────────────────────────────────────────
+ipcMain.handle('tutorial:open', () => {
+  openTutorialWindow();
 });
 
 // ─── IPC: Read PDF fields ─────────────────────────────────────────────────────

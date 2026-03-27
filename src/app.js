@@ -88,6 +88,20 @@ const state = {
   techConfig: null, // Will hold { stack: 'Java', senior: 0, pleno: 0 }
 };
 
+// Helper: get saved values for a specific tech stack
+function getSavedTechValues(stack) {
+  try {
+    const saved = localStorage.getItem(`tech_values_${stack}`);
+    if (saved) return JSON.parse(saved);
+  } catch (e) { /* ignore */ }
+  return null;
+}
+
+// Helper: save values for a specific tech stack
+function saveTechValues(stack, senior, pleno) {
+  localStorage.setItem(`tech_values_${stack}`, JSON.stringify({ senior, pleno }));
+}
+
 // Load saved Tech Config from localStorage
 try {
   const saved = localStorage.getItem('tech_config');
@@ -204,10 +218,14 @@ async function openFile(filePath = null) {
 // ─── Tech Modal Logic ─────────────────────────────────────────────────────────
 function showTechModal() {
   techModal.classList.add('active');
-  const radio = document.querySelector(`input[name="tech_stack"][value="${state.techConfig.stack}"]`);
+  const stack = state.techConfig.stack;
+  const radio = document.querySelector(`input[name="tech_stack"][value="${stack}"]`);
   if (radio) radio.checked = true;
-  techValSenior.value = state.techConfig.senior.toFixed(2);
-  techValPleno.value = state.techConfig.pleno.toFixed(2);
+  // Load last-saved values for the current stack (may differ from confirmed config)
+  const saved = getSavedTechValues(stack);
+  const values = saved || { senior: state.techConfig.senior, pleno: state.techConfig.pleno };
+  techValSenior.value = values.senior.toFixed(2);
+  techValPleno.value = values.pleno.toFixed(2);
 }
 
 function hideTechModal() {
@@ -218,11 +236,22 @@ function hideTechModal() {
 techRadios.forEach((radio) => {
   radio.addEventListener('change', (e) => {
     const stack = e.target.value;
-    const def = TECH_DEFAULTS[stack];
-    if (def) {
-      techValSenior.value = def.senior.toFixed(2);
-      techValPleno.value = def.pleno.toFixed(2);
-    }
+    // Load last-saved values for this tech, or fall back to defaults
+    const saved = getSavedTechValues(stack);
+    const values = saved || TECH_DEFAULTS[stack];
+    techValSenior.value = values.senior.toFixed(2);
+    techValPleno.value = values.pleno.toFixed(2);
+  });
+});
+
+// Save values for current tech whenever the user types (real-time)
+[techValSenior, techValPleno].forEach((input) => {
+  input.addEventListener('input', () => {
+    const checkedRadio = document.querySelector('input[name="tech_stack"]:checked');
+    const stack = checkedRadio ? checkedRadio.value : state.techConfig.stack;
+    const senior = parseFloat(techValSenior.value) || 0;
+    const pleno = parseFloat(techValPleno.value) || 0;
+    saveTechValues(stack, senior, pleno);
   });
 });
 
@@ -232,11 +261,14 @@ btnConfirmTech.addEventListener('click', () => {
   const senior = parseFloat(techValSenior.value) || 0;
   const pleno = parseFloat(techValPleno.value) || 0;
 
+  // Save per-tech values and the active config
+  saveTechValues(stack, senior, pleno);
   state.techConfig = { stack, senior, pleno };
   localStorage.setItem('tech_config', JSON.stringify(state.techConfig));
 
   hideTechModal();
   showToast(`Configuração ${stack} ativa.`);
+  window.api.openTutorial();
 });
 
 // ─── Render form fields ───────────────────────────────────────────────────────
