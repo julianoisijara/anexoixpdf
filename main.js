@@ -4,6 +4,7 @@ const fs = require('fs');
 const { PDFDocument } = require('pdf-lib');
 
 let mainWindow;
+let lastSaveDir = null; // Último diretório de salvamento usado pelo usuário
 
 function createMenu() {
   const template = [
@@ -50,7 +51,7 @@ function createMenu() {
               type: 'info',
               title: '',
               message: 'Anexo IX Plennus',
-              detail: 'Autor: 1T Juliano\ne-mail: julianojri@fab.mil.br\nVersão: 1.0.0',
+              detail: 'Autor: 1T Juliano\ne-mail: julianojri@fab.mil.br\nVersão: 1.1.0',
               buttons: ['OK'],
               icon: path.join(__dirname, 'src', 'assets', 'autor.png')
             });
@@ -225,14 +226,13 @@ ipcMain.handle('pdf:writeFields', async (_event, filePath, fieldValues, customFi
 
     // Save dialog
     const ext = path.extname(filePath);
-    const dir = path.dirname(filePath);
-    let defaultPath;
-    if (customFileName) {
-      defaultPath = path.join(dir, customFileName + ext);
-    } else {
-      const base = filePath.slice(0, -ext.length);
-      defaultPath = base + '_preenchido' + ext;
-    }
+    const baseFileName = customFileName
+      ? customFileName + ext
+      : path.basename(filePath, ext) + '_preenchido' + ext;
+
+    // Usa o último diretório salvo pelo usuário; caso não exista, usa o diretório do PDF de origem
+    const saveDir = lastSaveDir || path.dirname(filePath);
+    const defaultPath = path.join(saveDir, baseFileName);
 
     const saveResult = await dialog.showSaveDialog(mainWindow, {
       title: 'Salvar PDF preenchido',
@@ -243,6 +243,8 @@ ipcMain.handle('pdf:writeFields', async (_event, filePath, fieldValues, customFi
     if (saveResult.canceled) return { success: false, message: 'Cancelado' };
 
     fs.writeFileSync(saveResult.filePath, savedBytes);
+    // Memoriza o diretório onde o usuário salvou para a próxima vez
+    lastSaveDir = path.dirname(saveResult.filePath);
     return { success: true, savedPath: saveResult.filePath };
   } catch (err) {
     return { success: false, message: err.message };

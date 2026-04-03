@@ -14,7 +14,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '../node_modules/pdfjs-dist/build/pdf.w
    Formato: 'Nome Técnico PDF': { label: 'Rótulo Amigável', tooltip: 'Texto descritivo' (opcional) } */
 const FIELD_LABEL_MAPPINGS = {
   'Caixa de texto 1': { label: 'N° da OS:' },
-  'Caixa de texto 1_12': { label: 'Dias Uteis:' },
+  'Caixa de texto 1_12': { label: 'Dias Úteis:' },
   'Caixa de texto 1_3': { label: 'Período Inicial:' },
   'Caixa de texto 1_4': { label: 'Período Final:' },
   'Caixa de texto 1_9': { label: 'Quantidade Sênior(s):', tooltip: 'Quantidade de funcionário(s) que trabalhou mês completo' },
@@ -212,6 +212,7 @@ async function openFile(filePath = null) {
   setStatus('');
 
   // Show tech selection modal automatically when file is loaded
+  isInitialTechSetup = true;
   showTechModal();
 }
 
@@ -224,8 +225,8 @@ function showTechModal() {
   // Load last-saved values for the current stack (may differ from confirmed config)
   const saved = getSavedTechValues(stack);
   const values = saved || { senior: state.techConfig.senior, pleno: state.techConfig.pleno };
-  techValSenior.value = values.senior.toFixed(2);
-  techValPleno.value = values.pleno.toFixed(2);
+  techValSenior.value = values.senior.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  techValPleno.value = values.pleno.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function hideTechModal() {
@@ -239,27 +240,54 @@ techRadios.forEach((radio) => {
     // Load last-saved values for this tech, or fall back to defaults
     const saved = getSavedTechValues(stack);
     const values = saved || TECH_DEFAULTS[stack];
-    techValSenior.value = values.senior.toFixed(2);
-    techValPleno.value = values.pleno.toFixed(2);
+    techValSenior.value = values.senior.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    techValPleno.value = values.pleno.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   });
 });
 
 // Save values for current tech whenever the user types (real-time)
 [techValSenior, techValPleno].forEach((input) => {
+  input.addEventListener('keypress', (e) => {
+    if (!/[0-9,]/.test(e.key) && e.key !== 'Enter' && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+    }
+  });
+
+  input.addEventListener('paste', (e) => {
+    const pasteData = e.clipboardData.getData('text');
+    if (!/^[0-9,]+$/.test(pasteData)) {
+      e.preventDefault();
+    }
+  });
+
   input.addEventListener('input', () => {
+    input.value = input.value.replace(/[^0-9,]/g, '');
+
     const checkedRadio = document.querySelector('input[name="tech_stack"]:checked');
     const stack = checkedRadio ? checkedRadio.value : state.techConfig.stack;
-    const senior = parseFloat(techValSenior.value) || 0;
-    const pleno = parseFloat(techValPleno.value) || 0;
+    const senior = parseFloat(techValSenior.value.replace(/\./g, '').replace(',', '.')) || 0;
+    const pleno = parseFloat(techValPleno.value.replace(/\./g, '').replace(',', '.')) || 0;
     saveTechValues(stack, senior, pleno);
   });
+
+  input.addEventListener('blur', () => {
+    let fVal = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+    input.value = fVal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  });
+
+  input.addEventListener('focus', () => {
+    // Strip dots (thousands separator) when focused so user can edit cleanly without dots as requested
+    input.value = input.value.replace(/\./g, '');
+  });
 });
+
+let isInitialTechSetup = false;
 
 btnConfirmTech.addEventListener('click', () => {
   const checkedRadio = document.querySelector('input[name="tech_stack"]:checked');
   const stack = checkedRadio ? checkedRadio.value : 'Java';
-  const senior = parseFloat(techValSenior.value) || 0;
-  const pleno = parseFloat(techValPleno.value) || 0;
+  const senior = parseFloat(techValSenior.value.replace(/\./g, '').replace(',', '.')) || 0;
+  const pleno = parseFloat(techValPleno.value.replace(/\./g, '').replace(',', '.')) || 0;
 
   // Save per-tech values and the active config
   saveTechValues(stack, senior, pleno);
@@ -268,7 +296,11 @@ btnConfirmTech.addEventListener('click', () => {
 
   hideTechModal();
   showToast(`Configuração ${stack} ativa.`);
-  window.api.openTutorial();
+
+  if (isInitialTechSetup) {
+    window.api.openTutorial();
+    isInitialTechSetup = false;
+  }
 });
 
 // ─── Render form fields ───────────────────────────────────────────────────────
@@ -710,7 +742,7 @@ function attachFieldListeners() {
           if (el3 && el4 && el3.value && el4.value) {
             const d1 = new Date(el3.value);
             const d2 = new Date(el4.value);
-            
+
             let error = null;
             if (d1 >= d2) {
               error = 'A data inicial deve ser menor que a data final';
@@ -870,6 +902,11 @@ $('btn-new-pdf').addEventListener('click', () => {
   showScreen(landingScreen);
 });
 
+// Change Tech
+$('btn-change-tech').addEventListener('click', () => {
+  showTechModal();
+});
+
 // Save PDF
 $('btn-save-pdf').addEventListener('click', async () => {
   if (!state.filePath) return;
@@ -955,7 +992,7 @@ $('btn-save-pdf').addEventListener('click', async () => {
   // Validate date range: Caixa de texto 1_3 (Start) < Caixa de texto 1_4 (End) and diff <= 30 days
   const valStart = values['Caixa de texto 1_3'];
   const valEnd = values['Caixa de texto 1_4'];
-  
+
   const parseBRDate = (s) => {
     if (!s) return null;
     const parts = s.split('/');
