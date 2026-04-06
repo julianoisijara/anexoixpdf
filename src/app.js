@@ -70,9 +70,9 @@ const FIELD_DEFAULT_OVERRIDES = {
 
 // ─── Tech Stack Financial Defaults ─────────────────────────────────────────────
 const TECH_DEFAULTS = {
-  Java: { senior: 25366.86, pleno: 17927.47 },
-  FORMs: { senior: 25212.77, pleno: 17681.40 },
-  GENEXUS: { senior: 25924.98, pleno: 17334.43 },
+  Java: { senior: 26627.40, pleno: 18808.60 },
+  FORMs: { senior: 26465.46, pleno: 18549.98 },
+  GENEXUS: { senior: 27213.99, pleno: 18185.32 },
 };
 
 // ─── State ────────────────────────────────────────────────────────────────────
