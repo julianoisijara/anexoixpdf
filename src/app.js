@@ -81,9 +81,8 @@ const state = {
   fields: [],
   pdfBytes: null,
   pdfDoc: null,       // PDF.js document
-  currentPage: 1,
   totalPages: 1,
-  renderTask: null,
+  renderTasks: [],
   resizing: false,
   techConfig: null, // Will hold { stack: 'Java', senior: 0, pleno: 0 }
 };
@@ -119,9 +118,7 @@ const landingScreen = $('landing-screen');
 const loadingScreen = $('loading-screen');
 const editorScreen = $('editor-screen');
 const fieldsContainer = $('fields-container');
-const pdfCanvas = $('pdf-canvas');
-const ctx = pdfCanvas.getContext('2d');
-const pageIndicator = $('page-indicator');
+
 const fileNameBadge = $('file-name-badge');
 const fieldsCountBadge = $('fields-count-badge');
 const statusMsg = $('status-msg');
@@ -660,40 +657,52 @@ async function loadPdfPreview(base64) {
 
     state.pdfDoc = await pdfjsLib.getDocument({ data: bytes }).promise;
     state.totalPages = state.pdfDoc.numPages;
-    state.currentPage = 1;
-    await renderPage(state.currentPage);
-    updatePageIndicator();
+    await renderAllPages();
   } catch (e) {
     console.error('PDF.js load error:', e);
   }
 }
 
-async function renderPage(num) {
+async function renderAllPages() {
   if (!state.pdfDoc) return;
-  if (state.renderTask) {
-    state.renderTask.cancel();
-    state.renderTask = null;
-  }
 
-  const page = await state.pdfDoc.getPage(num);
   const container = $('preview-container');
+
+  // Cancel any ongoing rendering tasks
+  if (state.renderTasks && state.renderTasks.length > 0) {
+    state.renderTasks.forEach(task => {
+      try { task.cancel(); } catch (e) {}
+    });
+  }
+  state.renderTasks = [];
+
+  container.innerHTML = ''; // Clear container
+
   const availW = container.clientWidth - 40;
-  const viewport = page.getViewport({ scale: 1 });
-  const scale = Math.min(availW / viewport.width, 1.8);
-  const scaled = page.getViewport({ scale });
 
-  pdfCanvas.width = scaled.width;
-  pdfCanvas.height = scaled.height;
+  for (let num = 1; num <= state.totalPages; num++) {
+    const page = await state.pdfDoc.getPage(num);
+    const viewport = page.getViewport({ scale: 1 });
+    const scale = Math.min(availW / viewport.width, 1.8);
+    const scaled = page.getViewport({ scale });
 
-  state.renderTask = page.render({ canvasContext: ctx, viewport: scaled });
-  await state.renderTask.promise;
-  state.renderTask = null;
-}
+    const canvas = document.createElement('canvas');
+    canvas.width = scaled.width;
+    canvas.height = scaled.height;
+    container.appendChild(canvas);
 
-function updatePageIndicator() {
-  pageIndicator.textContent = `Pág ${state.currentPage} / ${state.totalPages}`;
-  $('btn-prev-page').disabled = state.currentPage <= 1;
-  $('btn-next-page').disabled = state.currentPage >= state.totalPages;
+    const context = canvas.getContext('2d');
+    const renderTask = page.render({ canvasContext: context, viewport: scaled });
+    state.renderTasks.push(renderTask);
+
+    try {
+      await renderTask.promise;
+    } catch (e) {
+      if (e.name !== 'RenderingCancelledException') {
+        console.error('Error rendering page:', e);
+      }
+    }
+  }
 }
 
 // ─── Real-time preview ───────────────────────────────────────────────────────
@@ -711,15 +720,7 @@ async function triggerPreviewUpdate() {
     return;
   }
 
-  // Re-load PDF.js with the updated bytes (keeps same page)
-  const savedPage = state.currentPage;
   await loadPdfPreview(result.pdfBase64);
-  // Restore page if multi-page
-  if (savedPage > 1 && savedPage <= state.totalPages) {
-    state.currentPage = savedPage;
-    await renderPage(state.currentPage);
-    updatePageIndicator();
-  }
   setStatus('', '');
 }
 
@@ -946,7 +947,8 @@ $('btn-new-pdf').addEventListener('click', () => {
   state.fields = [];
   state.pdfDoc = null;
   fieldsContainer.innerHTML = '';
-  ctx.clearRect(0, 0, pdfCanvas.width, pdfCanvas.height);
+  const container = $('preview-container');
+  if (container) container.innerHTML = '';
   setStatus('');
   showScreen(landingScreen);
 });
@@ -1121,22 +1123,6 @@ $('btn-save-pdf').addEventListener('click', async () => {
 // Clear fields
 $('btn-clear-fields').addEventListener('click', clearFields);
 
-// Page navigation
-$('btn-prev-page').addEventListener('click', async () => {
-  if (state.currentPage > 1) {
-    state.currentPage--;
-    await renderPage(state.currentPage);
-    updatePageIndicator();
-  }
-});
-$('btn-next-page').addEventListener('click', async () => {
-  if (state.currentPage < state.totalPages) {
-    state.currentPage++;
-    await renderPage(state.currentPage);
-    updatePageIndicator();
-  }
-});
-
 // Resizable divider
 divider.addEventListener('mousedown', (e) => {
   e.preventDefault();
@@ -1157,11 +1143,11 @@ document.addEventListener('mouseup', () => {
   divider.classList.remove('dragging');
   document.body.style.cursor = '';
   document.body.style.userSelect = '';
-  // Re-render current page to fit new width
-  if (state.pdfDoc) renderPage(state.currentPage);
+  // Re-render all pages to fit new width
+  if (state.pdfDoc) renderAllPages();
 });
 
 // Window resize → re-render
 window.addEventListener('resize', () => {
-  if (state.pdfDoc) renderPage(state.currentPage);
+  if (state.pdfDoc) renderAllPages();
 });
