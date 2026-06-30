@@ -18,9 +18,9 @@ const FIELD_LABEL_MAPPINGS = {
   'Caixa de texto 1_3': { label: 'Período Inicial:' },
   'Caixa de texto 1_4': { label: 'Período Final:' },
   'Caixa de texto 1_9': { label: 'Quantidade Sênior(s):', tooltip: 'Quantidade de funcionário(s) que trabalhou mês completo' },
-  'VIRTUAL_DIAS_SENIOR_PARCIAL': { label: 'Dias Sênior Parcial:', tooltip: 'Dias trabalhados parcialmente por funcionário(s)' },
+  'VIRTUAL_DIAS_SENIOR_PARCIAL': { label: 'Dias Sênior Parcial:', tooltip: 'Colque a quantidade de dias trabalhados no mês parcialmente por funcionário(s)' },
   'Caixa de texto 1_7': { label: 'Quantidade Pleno(s):', tooltip: 'Quantidade de funcionário(s) que trabalhou mês completo' },
-  'VIRTUAL_DIAS_PLENO_PARCIAL': { label: 'Dias Pleno Parcial:', tooltip: 'Dias trabalhados parcialmente por funcionário(s)' },
+  'VIRTUAL_DIAS_PLENO_PARCIAL': { label: 'Dias Pleno Parcial:', tooltip: 'Colque a quantidade de dias trabalhados no mês parcialmente por funcionário(s)' },
   'Caixa de texto 1_5': { label: 'Data Recebimento:' },
   'Caixa de texto 1_20': { label: 'TPF:' },
   'Caixa de texto 1_24': { label: 'Linhas Código:' },
@@ -136,6 +136,7 @@ const techRadios = document.querySelectorAll('input[name="tech_stack"]');
 const techValSenior = $('tech-val-senior');
 const techValPleno = $('tech-val-pleno');
 const btnConfirmTech = $('btn-confirm-tech');
+const btnCancelTech = $('btn-cancel-tech');
 
 // ─── Screen helpers ────────────────────────────────────────────────────────────
 function showScreen(screen) {
@@ -217,7 +218,50 @@ async function openFile(filePath = null) {
 }
 
 // ─── Tech Modal Logic ─────────────────────────────────────────────────────────
+let techSnapshot = null;
+
+function takeTechSnapshot() {
+  techSnapshot = {
+    config: state.techConfig ? { ...state.techConfig } : null,
+    values: {
+      Java: localStorage.getItem('tech_values_Java'),
+      FORMs: localStorage.getItem('tech_values_FORMs'),
+      GENEXUS: localStorage.getItem('tech_values_GENEXUS')
+    }
+  };
+}
+
+function restoreTechSnapshot() {
+  if (!techSnapshot) return;
+  state.techConfig = techSnapshot.config;
+  if (state.techConfig) {
+    localStorage.setItem('tech_config', JSON.stringify(state.techConfig));
+  } else {
+    localStorage.removeItem('tech_config');
+  }
+
+  const keys = ['Java', 'FORMs', 'GENEXUS'];
+  keys.forEach((key) => {
+    const val = techSnapshot.values[key];
+    if (val !== null) {
+      localStorage.setItem(`tech_values_${key}`, val);
+    } else {
+      localStorage.removeItem(`tech_values_${key}`);
+    }
+  });
+}
+
 function showTechModal() {
+  takeTechSnapshot();
+
+  if (btnCancelTech) {
+    if (isInitialTechSetup) {
+      btnCancelTech.style.display = 'none';
+    } else {
+      btnCancelTech.style.display = 'inline-flex';
+    }
+  }
+
   techModal.classList.add('active');
   const stack = state.techConfig.stack;
   const radio = document.querySelector(`input[name="tech_stack"][value="${stack}"]`);
@@ -301,6 +345,11 @@ btnConfirmTech.addEventListener('click', () => {
     window.api.openTutorial();
     isInitialTechSetup = false;
   }
+});
+
+btnCancelTech.addEventListener('click', () => {
+  restoreTechSnapshot();
+  hideTechModal();
 });
 
 // ─── Render form fields ───────────────────────────────────────────────────────

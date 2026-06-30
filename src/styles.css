@@ -132,6 +132,21 @@ html, body {
 }
 .btn-secondary:hover { background: var(--bg-glass-h); color: var(--text-1); border-color: var(--border-h); }
 
+.btn-danger {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(239, 91, 91, 0.1); color: var(--red);
+  border: 1px solid rgba(239, 91, 91, 0.3); border-radius: var(--radius);
+  padding: 10px 20px; font-size: 0.875rem; font-weight: 500;
+  cursor: pointer; transition: var(--transition); font-family: var(--font);
+  backdrop-filter: blur(10px);
+}
+.btn-danger:hover {
+  background: rgba(239, 91, 91, 0.2);
+  color: #fff;
+  border-color: var(--red);
+  box-shadow: 0 4px 20px rgba(239, 91, 91, 0.25);
+}
+
 .btn-ghost {
   display: inline-flex; align-items: center; gap: 6px;
   background: transparent; color: var(--text-2); border: none;
@@ -458,6 +473,11 @@ html, body {
 }
 .form-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-2); }
 .modal-footer {
-  display: flex; justify-content: flex-end;
+  display: flex; gap: 12px; justify-content: flex-end;
 }
-.modal-footer .btn-primary { width: 100%; justify-content: center; }
+.modal-footer .btn-primary,
+.modal-footer .btn-danger,
+.modal-footer .btn-secondary {
+  flex: 1;
+  justify-content: center;
+}
