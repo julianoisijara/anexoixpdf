@@ -135,6 +135,11 @@ const techValPleno = $('tech-val-pleno');
 const btnConfirmTech = $('btn-confirm-tech');
 const btnCancelTech = $('btn-cancel-tech');
 
+// Save Summary Modal Refs
+const saveSummaryModal = $('save-summary-modal');
+const btnConfirmSave = $('btn-confirm-save');
+const btnCancelSave = $('btn-cancel-save');
+
 // ─── Screen helpers ────────────────────────────────────────────────────────────
 function showScreen(screen) {
   [landingScreen, loadingScreen, editorScreen].forEach((s) => s.classList.remove('active'));
@@ -216,6 +221,7 @@ async function openFile(filePath = null) {
 
 // ─── Tech Modal Logic ─────────────────────────────────────────────────────────
 let techSnapshot = null;
+let onConfirmSaveCallback = null;
 
 function takeTechSnapshot() {
   techSnapshot = {
@@ -1102,22 +1108,61 @@ $('btn-save-pdf').addEventListener('click', async () => {
     return;
   }
 
-  let customFileName = undefined;
-  const inputOS = values['Caixa de texto 1'];
-  if (inputOS && inputOS.trim() !== '') {
-    customFileName = `ANEXO 9 - OS${inputOS.trim()}`;
-  }
+  // Populate summary fields in modal
+  $('sum-tech').textContent = state.techConfig ? state.techConfig.stack : '-';
+  $('sum-os').textContent = values['Caixa de texto 1'] || '-';
+  $('sum-dias-uteis').textContent = values['Caixa de texto 1_12'] || '0';
+  $('sum-dias-senior').textContent = values['Caixa de texto 1_9'] || '0';
+  $('sum-dias-pleno').textContent = values['Caixa de texto 1_7'] || '0';
+  
+  const seniorDays = parseFloat(values['Caixa de texto 1_9'] || 0);
+  const plenoDays = parseFloat(values['Caixa de texto 1_7'] || 0);
+  $('sum-dias-desenvolvedor').textContent = (seniorDays + plenoDays).toString();
 
-  const result = await window.api.writeFields(state.filePath, values, customFileName);
+  $('sum-val-senior').textContent = values['Caixa de texto 1_36'] ? `R$ ${values['Caixa de texto 1_36']}` : 'R$ 0,00';
+  $('sum-val-pleno').textContent = values['Caixa de texto 1_37'] ? `R$ ${values['Caixa de texto 1_37']}` : 'R$ 0,00';
+  $('sum-val-os').textContent = values['Caixa de texto 1_38'] ? `R$ ${values['Caixa de texto 1_38']}` : 'R$ 0,00';
 
-  btn.disabled = false;
-  if (result.success) {
-    setStatus('PDF salvo com sucesso!', 'success');
-    showToast(`✓ Salvo em: ${result.savedPath.split('/').pop()}`, 'success');
-  } else {
-    setStatus('Erro ao salvar: ' + result.message, 'error');
-    showToast('Erro: ' + result.message, 'error');
+  // Exibir Modal de Resumo
+  saveSummaryModal.classList.add('active');
+
+  // Callback para realizar a gravação após confirmação
+  onConfirmSaveCallback = async () => {
+    let customFileName = undefined;
+    const inputOS = values['Caixa de texto 1'];
+    if (inputOS && inputOS.trim() !== '') {
+      customFileName = `ANEXO 9 - OS${inputOS.trim()}`;
+    }
+
+    setStatus('Salvando…', '');
+    const result = await window.api.writeFields(state.filePath, values, customFileName);
+
+    btn.disabled = false;
+    if (result.success) {
+      setStatus('PDF salvo com sucesso!', 'success');
+      showToast(`✓ Salvo em: ${result.savedPath.split('/').pop()}`, 'success');
+    } else {
+      setStatus('Erro ao salvar: ' + result.message, 'error');
+      showToast('Erro: ' + result.message, 'error');
+    }
+  };
+});
+
+btnConfirmSave.addEventListener('click', async () => {
+  saveSummaryModal.classList.remove('active');
+  if (onConfirmSaveCallback) {
+    const callback = onConfirmSaveCallback;
+    onConfirmSaveCallback = null;
+    await callback();
   }
+});
+
+btnCancelSave.addEventListener('click', () => {
+  saveSummaryModal.classList.remove('active');
+  onConfirmSaveCallback = null;
+  // Re-enable the save button and reset status
+  $('btn-save-pdf').disabled = false;
+  setStatus('');
 });
 
 // Clear fields

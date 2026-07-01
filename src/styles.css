@@ -480,3 +480,58 @@ html, body {
   flex: 1;
   justify-content: center;
 }
+
+/* Summary Modal */
+.summary-modal {
+  max-width: 500px;
+}
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+}
+.summary-label {
+  color: var(--text-2);
+  font-weight: 500;
+}
+.summary-value {
+  color: var(--text-1);
+  font-weight: 600;
+}
+.summary-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+.total-row {
+  font-size: 1.1rem;
+  padding-top: 8px;
+}
+.total-row .summary-label {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.highlight-blue {
+  color: var(--accent);
+}
+.highlight-green {
+  color: var(--green);
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(67, 219, 162, 0.2);
+}
+.highlight-tech {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
