@@ -1112,6 +1112,7 @@ $('btn-save-pdf').addEventListener('click', async () => {
   $('sum-tech').textContent = state.techConfig ? state.techConfig.stack : '-';
   $('sum-os').textContent = values['Caixa de texto 1'] || '-';
   $('sum-dias-uteis').textContent = values['Caixa de texto 1_12'] || '0';
+  $('sum-linhas-codigo').textContent = values['Caixa de texto 1_24'] || '0';
   $('sum-dias-senior').textContent = values['Caixa de texto 1_9'] || '0';
   $('sum-dias-pleno').textContent = values['Caixa de texto 1_7'] || '0';
   
@@ -1141,6 +1142,7 @@ $('btn-save-pdf').addEventListener('click', async () => {
     if (result.success) {
       setStatus('PDF salvo com sucesso!', 'success');
       showToast(`✓ Salvo em: ${result.savedPath.split('/').pop()}`, 'success');
+      clearFields();
     } else {
       setStatus('Erro ao salvar: ' + result.message, 'error');
       showToast('Erro: ' + result.message, 'error');
