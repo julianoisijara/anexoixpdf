@@ -3,6 +3,10 @@ const path = require('path');
 const fs = require('fs');
 const { PDFDocument } = require('pdf-lib');
 
+try {
+  require('electron-reloader')(module);
+} catch (_) {}
+
 let mainWindow;
 let lastSaveDir = null; // Último diretório de salvamento usado pelo usuário
 

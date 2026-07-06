@@ -677,7 +677,7 @@ async function renderAllPages() {
   // Cancel any ongoing rendering tasks
   if (state.renderTasks && state.renderTasks.length > 0) {
     state.renderTasks.forEach(task => {
-      try { task.cancel(); } catch (e) {}
+      try { task.cancel(); } catch (e) { }
     });
   }
   state.renderTasks = [];
@@ -1115,7 +1115,7 @@ $('btn-save-pdf').addEventListener('click', async () => {
   $('sum-linhas-codigo').textContent = values['Caixa de texto 1_24'] || '0';
   $('sum-dias-senior').textContent = values['Caixa de texto 1_9'] || '0';
   $('sum-dias-pleno').textContent = values['Caixa de texto 1_7'] || '0';
-  
+
   const seniorDays = parseFloat(values['Caixa de texto 1_9'] || 0);
   const plenoDays = parseFloat(values['Caixa de texto 1_7'] || 0);
   $('sum-dias-desenvolvedor').textContent = (seniorDays + plenoDays).toString();
