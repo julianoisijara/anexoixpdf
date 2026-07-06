@@ -6,6 +6,56 @@ const { PDFDocument } = require('pdf-lib');
 let mainWindow;
 let lastSaveDir = null; // Último diretório de salvamento usado pelo usuário
 
+const getConfigPath = () => path.join(app.getPath('userData'), 'config.json');
+
+function loadLastSaveDir() {
+  try {
+    const configPath = getConfigPath();
+    if (fs.existsSync(configPath)) {
+      const content = fs.readFileSync(configPath, 'utf-8');
+      const data = JSON.parse(content);
+      if (data && data.lastSaveDir) {
+        return data.lastSaveDir;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load config:', e);
+  }
+  return null;
+}
+
+function saveLastSaveDir(dir) {
+  try {
+    const configPath = getConfigPath();
+    const data = { lastSaveDir: dir };
+    fs.writeFileSync(configPath, JSON.stringify(data), 'utf-8');
+  } catch (e) {
+    console.error('Failed to save config:', e);
+  }
+}
+
+function getNearestExistingDir(dir) {
+  try {
+    let currentDir = dir;
+    while (currentDir) {
+      if (fs.existsSync(currentDir)) {
+        const stat = fs.statSync(currentDir);
+        if (stat.isDirectory()) {
+          return currentDir;
+        }
+      }
+      const parent = path.dirname(currentDir);
+      if (parent === currentDir) {
+        break;
+      }
+      currentDir = parent;
+    }
+  } catch (e) {
+    console.error('Error finding nearest existing directory:', e);
+  }
+  return null;
+}
+
 function createMenu() {
   const template = [
     {
@@ -230,8 +280,23 @@ ipcMain.handle('pdf:writeFields', async (_event, filePath, fieldValues, customFi
       ? customFileName + ext
       : path.basename(filePath, ext) + '_preenchido' + ext;
 
+    // Load lastSaveDir from persistent store if null
+    if (lastSaveDir === null) {
+      lastSaveDir = loadLastSaveDir();
+    }
+
     // Usa o último diretório salvo pelo usuário; caso não exista, usa o diretório do PDF de origem
-    const saveDir = lastSaveDir || path.dirname(filePath);
+    let saveDir = lastSaveDir;
+    if (saveDir) {
+      saveDir = getNearestExistingDir(saveDir);
+    }
+    if (!saveDir) {
+      saveDir = path.dirname(filePath);
+      saveDir = getNearestExistingDir(saveDir);
+    }
+    if (!saveDir) {
+      saveDir = app.getPath('documents');
+    }
     const defaultPath = path.join(saveDir, baseFileName);
 
     const saveResult = await dialog.showSaveDialog(mainWindow, {
@@ -245,6 +310,7 @@ ipcMain.handle('pdf:writeFields', async (_event, filePath, fieldValues, customFi
     fs.writeFileSync(saveResult.filePath, savedBytes);
     // Memoriza o diretório onde o usuário salvou para a próxima vez
     lastSaveDir = path.dirname(saveResult.filePath);
+    saveLastSaveDir(lastSaveDir);
     return { success: true, savedPath: saveResult.filePath };
   } catch (err) {
     return { success: false, message: err.message };
